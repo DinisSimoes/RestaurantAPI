@@ -1,4 +1,4 @@
-﻿using RestaurantAPI.Domain.Entities;
+using RestaurantAPI.Domain.Entities;
 using RestaurantAPI.Domain.Interfaces.Repositories;
 using RestaurantAPI.Domain.Interfaces.Services;
 
@@ -35,7 +35,7 @@ namespace RestaurantAPI.Application.Services
 
             return user;
         }
-
+        
         public async Task AddAsync(User user)
         {
             if (user == null)

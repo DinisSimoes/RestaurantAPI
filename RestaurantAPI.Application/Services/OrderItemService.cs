@@ -1,4 +1,4 @@
-﻿using RestaurantAPI.Domain.Entities;
+using RestaurantAPI.Domain.Entities;
 using RestaurantAPI.Domain.Interfaces.Repositories;
 using RestaurantAPI.Domain.Interfaces.Services;
 

@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using RestaurantAPI.Domain.DTOs;
 using RestaurantAPI.Domain.Entities;
 using RestaurantAPI.Domain.Interfaces.Repositories;
