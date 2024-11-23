@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RestaurantAPI.Application.Services;
+using RestaurantAPI.Domain.DTOs;
 using RestaurantAPI.Domain.Entities;
 
 namespace RestaurantAPI.API.Controllers
@@ -17,21 +18,29 @@ namespace RestaurantAPI.API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] User user, [FromQuery] string password)
+        public async Task<IActionResult> Register(RegisterDto registerDto)
         {
-            var result = await _authService.RegisterUserAsync(user, password);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _authService.RegisterUserAsync(registerDto);
+
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
 
-            return Ok("User registered successfully");
+            return Ok("User registered successfully.");
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] User user, [FromQuery] string password)
+        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
-            var token = await _authService.AuthenticateUserAsync(user.UserName, password);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var token = await _authService.AuthenticateUserAsync(loginDto.UserName, loginDto.Password);
+
             if (token == null)
-                return Unauthorized();
+                return Unauthorized(new { Message = "Invalid username or password." });
 
             return Ok(new { Token = token });
         }
