@@ -1,11 +1,13 @@
-﻿namespace RestaurantAPI.Domain.Entities
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace RestaurantAPI.Domain.Entities
 {
     public class Customer
     {
+        [Key]
         public Guid Id { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string PhoneNumber { get; set; }
-        public ICollection<Order> Orders { get; set; } = new List<Order>();
     }
 }

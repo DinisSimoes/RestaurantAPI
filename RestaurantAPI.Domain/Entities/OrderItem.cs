@@ -1,7 +1,10 @@
-﻿namespace RestaurantAPI.Domain.Entities
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace RestaurantAPI.Domain.Entities
 {
     public class OrderItem
     {
+        [Key]
         public Guid Id { get; set; }
         public Guid OrderId { get; set; }
         public Order Order { get; set; }

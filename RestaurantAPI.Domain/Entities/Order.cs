@@ -1,7 +1,10 @@
-﻿namespace RestaurantAPI.Domain.Entities
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace RestaurantAPI.Domain.Entities
 {
     public class Order
     {
+        [Key]
         public Guid Id { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public string Status { get; set; } = "Pending"; 
