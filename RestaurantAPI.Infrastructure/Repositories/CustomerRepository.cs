@@ -1,55 +1,52 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RestaurantAPI.Domain.Entities;
-using RestaurantAPI.Domain.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using RestaurantAPI.Domain.Interfaces.Repositories;
+using RestaurantAPI.Infrastructure.Data;
+using System.Data.Entity;
 
 namespace RestaurantAPI.Infrastructure.Repositories
 {
     public class CustomerRepository : ICustomerRepository
     {
-        private readonly DbContext _context;
+        private readonly AppDbContext _context;
 
-        public CustomerRepository(DbContext context)
+        public CustomerRepository(AppDbContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        // Recupera todos os Customers
         public async Task<IEnumerable<Customer>> GetAllAsync()
         {
             return await _context.Set<Customer>().ToListAsync();
         }
 
-        // Recupera um Customer por ID
+        public IQueryable<Customer> GetAll()
+        {
+            return _context.Set<Customer>().AsQueryable();
+        }
+
         public async Task<Customer> GetByIdAsync(Guid id)
         {
             return await _context.Set<Customer>().FindAsync(id);
         }
 
-        // Recupera um Customer por telefone
-        public async Task<Customer> GetByPhoneAsync(string phone)
+        public Customer? GetByPhoneNumber(string phone)
         {
-            return await _context.Set<Customer>().FirstOrDefaultAsync(c => c.PhoneNumber == phone);
+            return _context.Customers.FirstOrDefault(c => c.PhoneNumber == phone);
         }
 
-        // Adiciona um novo Customer
         public async Task AddAsync(Customer customer)
         {
             await _context.Set<Customer>().AddAsync(customer);
             await _context.SaveChangesAsync();
         }
 
-        // Atualiza um Customer
         public async Task UpdateAsync(Customer customer)
         {
             _context.Set<Customer>().Update(customer);
             await _context.SaveChangesAsync();
         }
 
-        // Deleta um Customer por ID
         public async Task DeleteAsync(Guid id)
         {
             var customer = await _context.Set<Customer>().FindAsync(id);

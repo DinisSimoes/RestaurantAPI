@@ -1,36 +1,35 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RestaurantAPI.Domain.Entities;
-using RestaurantAPI.Domain.Interfaces;
+using RestaurantAPI.Domain.Interfaces.Repositories;
 using RestaurantAPI.Infrastructure.Data;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace RestaurantAPI.Infrastructure.Repositories
 {
     public class MenuItemRepository : IMenuItemRepository
     {
-        private readonly DbContext _context;
+        private readonly AppDbContext _context;
 
-        public MenuItemRepository(DbContext context)
+        public MenuItemRepository(AppDbContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        // Recupera todos os itens do menu
         public async Task<IEnumerable<MenuItem>> GetAllAsync()
         {
             return await _context.Set<MenuItem>().ToListAsync();
         }
 
-        // Recupera um item do menu pelo ID
         public async Task<MenuItem> GetByIdAsync(Guid id)
         {
             return await _context.Set<MenuItem>().FindAsync(id);
         }
 
-        // Adiciona um novo item ao menu
+        public async Task<MenuItem?> GetByNameAsync(string name)
+        {
+            return await _context.Set<MenuItem>()
+                .FirstOrDefaultAsync(item => item.Name == name);
+        }
+
         public async Task AddAsync(MenuItem menuItem)
         {
 
@@ -38,14 +37,12 @@ namespace RestaurantAPI.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        // Atualiza um item do menu
         public async Task UpdateAsync(MenuItem menuItem)
         {
             _context.Set<MenuItem>().Update(menuItem);
             await _context.SaveChangesAsync();
         }
 
-        // Deleta um item do menu
         public async Task DeleteAsync(Guid id)
         {
             var menuItem = await _context.Set<MenuItem>().FindAsync(id);
