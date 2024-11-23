@@ -1,9 +1,7 @@
-﻿using RestaurantAPI.Domain.Entities;
-using RestaurantAPI.Domain.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using RestaurantAPI.Domain.DTOs;
+using RestaurantAPI.Domain.Entities;
+using RestaurantAPI.Domain.Interfaces.Repositories;
+using RestaurantAPI.Domain.Interfaces.Services;
 
 namespace RestaurantAPI.Application.Services
 {
@@ -16,13 +14,11 @@ namespace RestaurantAPI.Application.Services
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         }
 
-        // Recupera todos os MenuItems
         public async Task<IEnumerable<MenuItem>> GetAllAsync()
         {
             return await _repository.GetAllAsync();
         }
 
-        // Recupera um MenuItem por ID
         public async Task<MenuItem> GetByIdAsync(Guid id)
         {
             var item = await _repository.GetByIdAsync(id);
@@ -32,32 +28,45 @@ namespace RestaurantAPI.Application.Services
             return item;
         }
 
-        // Adiciona um novo MenuItem
-        public async Task AddAsync(MenuItem menuItem)
+        public async Task<MenuItem> GetByNameAsync(string name)
         {
-            if (menuItem == null)
-                throw new ArgumentNullException(nameof(menuItem));
+            var item = await _repository.GetByNameAsync(name);
+            if (item == null)
+                throw new KeyNotFoundException($"MenuItem with name {name} not found.");
+
+            return item;
+        }
+
+        public async Task AddAsync(MenuItemDto menuItemDto)
+        {
+            if (menuItemDto == null)
+                throw new ArgumentNullException(nameof(menuItemDto));
+
+            MenuItem menuItem = new MenuItem
+            {
+                Id = Guid.NewGuid(),
+                Name = menuItemDto.Name,
+                PriceCents = menuItemDto.PriceCents
+            };
 
             await _repository.AddAsync(menuItem);
         }
 
-        // Atualiza um MenuItem
-        public async Task UpdateAsync(MenuItem menuItem)
+        public async Task UpdateAsync(Guid id, MenuItemDto menuItemDto)
         {
-            if (menuItem == null)
-                throw new ArgumentNullException(nameof(menuItem));
+            if (menuItemDto == null)
+                throw new ArgumentNullException(nameof(menuItemDto));
 
-            var existingMenuItem = await _repository.GetByIdAsync(menuItem.Id);
+            var existingMenuItem = await _repository.GetByIdAsync(id);
             if (existingMenuItem == null)
-                throw new KeyNotFoundException($"MenuItem with ID {menuItem.Id} not found.");
+                throw new KeyNotFoundException($"MenuItem with ID {id} not found.");
 
-            existingMenuItem.Name = menuItem.Name;
-            existingMenuItem.PriceCents = menuItem.PriceCents;
+            existingMenuItem.Name = menuItemDto.Name;
+            existingMenuItem.PriceCents = menuItemDto.PriceCents;
 
             await _repository.UpdateAsync(existingMenuItem);
         }
 
-        // Deleta um MenuItem
         public async Task DeleteAsync(Guid id)
         {
             var existingMenuItem = await _repository.GetByIdAsync(id);

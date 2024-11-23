@@ -1,8 +1,9 @@
-﻿using RestaurantAPI.Domain.Entities;
-using RestaurantAPI.Domain.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using RestaurantAPI.Domain.DTOs;
+using RestaurantAPI.Domain.Entities;
+using RestaurantAPI.Domain.Interfaces.Repositories;
+using RestaurantAPI.Domain.Interfaces.Services;
+using RestaurantAPI.Domain.Models;
 
 namespace RestaurantAPI.Application.Services
 {
@@ -15,13 +16,11 @@ namespace RestaurantAPI.Application.Services
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         }
 
-        // Recupera todos os Customers
         public async Task<IEnumerable<Customer>> GetAllAsync()
         {
             return await _repository.GetAllAsync();
         }
 
-        // Recupera um Customer por ID
         public async Task<Customer> GetByIdAsync(Guid id)
         {
             var customer = await _repository.GetByIdAsync(id);
@@ -31,26 +30,31 @@ namespace RestaurantAPI.Application.Services
             return customer;
         }
 
-        // Recupera um Customer por telefone
         public async Task<Customer> GetByPhoneAsync(string phone)
         {
-            var customer = await _repository.GetByPhoneAsync(phone);
+            var customer = _repository.GetByPhoneNumber(phone);
             if (customer == null)
                 throw new KeyNotFoundException($"Customer with phone {phone} not found.");
 
             return customer;
         }
 
-        // Adiciona um novo Customer
-        public async Task AddAsync(Customer customer)
+        public async Task AddAsync(CustomerDto customerDto)
         {
-            if (customer == null)
-                throw new ArgumentNullException(nameof(customer));
+            if (customerDto == null)
+                throw new ArgumentNullException(nameof(customerDto));
 
-            await _repository.AddAsync(customer);
+            Customer costumer = new Customer
+            {
+                Id = Guid.NewGuid(),
+                FirstName = customerDto.firstName,
+                LastName = customerDto.lastName,
+                PhoneNumber = customerDto.phoneNumber,
+            };
+
+            await _repository.AddAsync(costumer);
         }
 
-        // Atualiza um Customer
         public async Task UpdateAsync(Customer customer)
         {
             if (customer == null)
@@ -67,7 +71,6 @@ namespace RestaurantAPI.Application.Services
             await _repository.UpdateAsync(existingCustomer);
         }
 
-        // Deleta um Customer por ID
         public async Task DeleteAsync(Guid id)
         {
             var existingCustomer = await _repository.GetByIdAsync(id);
@@ -75,6 +78,31 @@ namespace RestaurantAPI.Application.Services
                 throw new KeyNotFoundException($"Customer with ID {id} not found.");
 
             await _repository.DeleteAsync(id);
+        }
+
+        public async Task<PageResult<Customer>> GetClientsAsync(int page, int pageSize)
+        {
+            if (page <= 0) page = 1;
+            if (pageSize <= 0) pageSize = 10;
+
+            var skip = (page - 1) * pageSize;
+
+            var costumersQuery = _repository.GetAll();
+
+            var totalCostumers = await costumersQuery.CountAsync();
+
+            var costumers = await costumersQuery
+                .Skip(skip)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PageResult<Customer>
+            {
+                Items = costumers,
+                TotalItems = totalCostumers,
+                Page = page,
+                PageSize = pageSize
+            };
         }
     }
 }
