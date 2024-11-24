@@ -64,7 +64,7 @@ namespace RestaurantAPI.Application.Services
             {
                 Customer = customer,
                 TotalPriceCents = total,
-                Status = "pending", 
+                Status = "pending",
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 UpdatedBy = userId
@@ -92,7 +92,7 @@ namespace RestaurantAPI.Application.Services
                 }
                 return order;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
@@ -112,14 +112,17 @@ namespace RestaurantAPI.Application.Services
             {
                 Id = Guid.NewGuid(),
                 OrderId = order.Id,
+                Order = order,
                 ItemId = menuItem.Id,
+                MenuItem = menuItem,
                 Quantity = request.orderItem.Quantity
             };
 
             order.TotalPriceCents += menuItem.PriceCents * orderItem.Quantity;
 
-            await _orderItemService.AddAsync(orderItem);
             await _orderRepository.UpdateAsync(order);
+            await _orderItemService.AddAsync(orderItem);
+
         }
 
         private void ValidateOrderDto(OrderDto orderDto)

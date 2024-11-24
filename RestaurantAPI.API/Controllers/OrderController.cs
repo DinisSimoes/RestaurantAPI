@@ -20,8 +20,15 @@ namespace RestaurantAPI.API.Controllers
             _httpContextAccessor = httpContextAccessor;
         }
 
+        /// <summary>
+        /// Cria um novo pedido.
+        /// </summary>
+        /// <param name="orderDto">Dados do pedido a ser criado.</param>
+        /// <returns>Mensagem de sucesso ou erro.</returns>
+        /// <response code="200">Pedido criado com sucesso.</response>
+        /// <response code="400">Dados do pedido são inválidos ou faltando.</response>
+        /// <response code="500">Erro interno ao criar o pedido.</response>
         [HttpPost]
-        [Authorize(Roles = "Cashier")]
         public async Task<IActionResult> CreateOrder([FromBody] OrderDto orderDto)
         {
             if (orderDto == null) return BadRequest(new { Message = "Order data is required." });
@@ -44,7 +51,16 @@ namespace RestaurantAPI.API.Controllers
 
         }
 
-        [HttpPut("{id}")]
+        /// <summary>
+        /// Atualiza o status de um pedido.
+        /// </summary>
+        /// <param name="id">ID do pedido.</param>
+        /// <param name="request">Dados do novo status para o pedido.</param>
+        /// <returns>Resposta de sucesso ou erro.</returns>
+        /// <response code="204">Status do pedido atualizado com sucesso.</response>
+        /// <response code="404">Pedido não encontrado.</response>
+        /// <response code="400">Dados inválidos para atualização.</response>
+        [HttpPut("{id}/status")]
         [Authorize(Roles = "Cashier")]
         public async Task<IActionResult> UpdateOrder(Guid id, [FromBody] UpdateOrderRequest request)
         {
@@ -60,7 +76,16 @@ namespace RestaurantAPI.API.Controllers
             return NoContent();
         }
 
-        [HttpDelete("orders/{orderId}/items/{itemId}")]
+        /// <summary>
+        /// Remove um item de um pedido.
+        /// </summary>
+        /// <param name="orderId">ID do pedido.</param>
+        /// <param name="itemId">ID do item a ser removido.</param>
+        /// <returns>Resposta de sucesso ou erro.</returns>
+        /// <response code="204">Item removido com sucesso.</response>
+        /// <response code="404">Pedido ou item não encontrado.</response>
+        /// <response code="500">Erro interno ao remover o item.</response>
+        [HttpDelete("{orderId}/items/{itemId}")]
         [Authorize(Roles = "Cashier")]
         public async Task<IActionResult> RemoveItemFromOrder(Guid orderId, Guid itemId)
         {
@@ -79,7 +104,16 @@ namespace RestaurantAPI.API.Controllers
             }
         }
 
-        [HttpPost("addItems/{orderId}")]
+        /// <summary>
+        /// Adiciona um item a um pedido existente.
+        /// </summary>
+        /// <param name="orderId">ID do pedido ao qual o item será adicionado.</param>
+        /// <param name="request">Dados do item a ser adicionado.</param>
+        /// <returns>Resposta de sucesso ou erro.</returns>
+        /// <response code="200">Item adicionado com sucesso.</response>
+        /// <response code="404">Pedido não encontrado.</response>
+        /// <response code="400">Dados inválidos para o item.</response>
+        [HttpPost("{orderId}/items")]
         [Authorize(Roles = "Cashier")]
         public async Task<IActionResult> AddItemToOrder(Guid orderId, [FromBody] AddOrderItemRequest request)
         {

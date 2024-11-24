@@ -16,6 +16,13 @@ namespace RestaurantAPI.API.Controllers
             _customerService = customerService;
         }
 
+        /// <summary>
+        /// Obtém uma lista de clientes com paginação.
+        /// </summary>
+        /// <param name="page">Número da página a ser recuperada (padrão é 1).</param>
+        /// <param name="pageSize">Número de clientes por página (padrão é 10).</param>
+        /// <returns>Lista de clientes com base na paginação fornecida.</returns>
+        /// <response code="200">Lista de clientes retornada com sucesso.</response>
         [HttpGet]
         [Authorize(Roles = "Cashier")]
         public async Task<IActionResult> GetClients([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
@@ -24,6 +31,13 @@ namespace RestaurantAPI.API.Controllers
             return Ok(clients);
         }
 
+        /// <summary>
+        /// Adiciona um novo cliente ao sistema.
+        /// </summary>
+        /// <param name="customerDto">Dados do cliente a ser adicionado.</param>
+        /// <returns>Mensagem de sucesso e dados do cliente criado.</returns>
+        /// <response code="200">Cliente adicionado com sucesso.</response>
+        /// <response code="400">Dados do cliente inválidos ou faltando.</response>
         [HttpPost]
         [Authorize(Roles = "Cashier")]
         public async Task<IActionResult> AddCustomer([FromBody] CustomerDto customerDto)

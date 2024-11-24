@@ -17,6 +17,12 @@ namespace RestaurantAPI.API.Controllers
             _authService = authService;
         }
 
+        /// <summary>
+        /// Registra um novo usuário. (A função de "convidar")
+        /// </summary>
+        /// <param name="registerDto">Informações do usuário para registro.</param>
+        /// /// <response code="200">Usuário registrado com sucesso.</response>
+        /// <response code="400">Erro de validação ou falha no registro.</response>
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDto registerDto)
         {
@@ -31,6 +37,14 @@ namespace RestaurantAPI.API.Controllers
             return Ok("User registered successfully.");
         }
 
+        /// <summary>
+        /// Realiza o login do usuário.
+        /// </summary>
+        /// <param name="loginDto">Credenciais do usuário (nome de usuário e senha).</param>
+        /// <returns>Token JWT ou mensagem de erro.</returns>
+        /// <response code="200">Login bem-sucedido, retorna o token JWT.</response>
+        /// <response code="400">Erro de validação.</response>
+        /// <response code="401">Credenciais inválidas.</response>
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
