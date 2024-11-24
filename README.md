@@ -2,14 +2,15 @@
 
 ## Configuração 
 
-### Pré-requisitos
+### Rodando a BD no componente Docker
+#### Pré-requisitos
 Certifique-se que tem o Docker e o Docker Compose instalados no seu sistema 
 
 [Instalar Docker](https://docs.docker.com/engine/install/)
 
 [Instalar Docker Compose](https://docs.docker.com/compose/install/)
 
-### Passo a Passo
+#### Passo a Passo
 No temrinal entre na pasta ...\RestaurantAPI.API\Docker existente no projeto e rode o comando para instalar o banco via docker
 ```
 docker-compose up -d
@@ -23,14 +24,38 @@ Para encerrar o container docker use o comando
 docker-compose down
 ```
 
+### Rodando Migrations no PMC (Package Manager Console)
+
+Agora que temos a BD a funcionar é necessário executar as migrations.
+
+Para aplicar as migrations no banco de dados, siga os passos abaixo utilizando o **Package Manager Console** no Visual Studio.
+
+#### Pré-requisitos
+
+- Certifique-se de que o **.NET SDK** esteja instalado corretamente no seu ambiente. Para verificar, execute `dotnet --version` no terminal.
+
+#### Passos para rodar Migrations
+
+1. **Abra o Package Manager Console** no Visual Studio:
+   - No Visual Studio, vá em **Tools** > **NuGet Package Manager** > **Package Manager Console**.
+
+2. **Selecione o projeto correto** no **PMC**:
+   - Selecione esse projeto de Infrastructure como o **Default Project** no PMC.
+
+3. **Aplique as migrations**:
+   Para aplicar todas as migrations pendentes ao banco de dados, execute o comando:
+
+   ```powershell
+   Update-Database
+
 ## Sugestões
 
-Caso o volume de usuarios da aplicação cresca recomendo implementar o cqrs na coneção à BD.
+Caso o volume de usuarios da aplicação cresca recomendo implementar a metodologia [cqrs](https://medium.com/@marcelomg21/cqrs-command-query-responsibility-segregation-em-uma-arquitetura-de-micro-servi%C3%A7os-71dcb687a8a9) na coneção à BD.
 
 Para se colocar em produção é altamente recomendável realizar as seguintes mudanças:
 1. Colocar encriptação em dados sensiveis ao gravar a informação (Ex: celular)
 2. Colocar as keys e secretkeys em algum lugar seguro (Ex. Azure Key Vault ou AWS Secret Manager)
-3. Validação mais "real" do número de celular (com regex)
+3. Implementar uma validação mais "real" do número de celular (com regex)
 
 ## Tarefas para eu fazer no futuro
 - [ ] Refatorar a função AddAsync (Create Order), ela está me incomodando
