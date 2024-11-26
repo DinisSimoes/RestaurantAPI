@@ -58,17 +58,4 @@ Para se colocar em produção é altamente recomendável realizar as seguintes m
 3. Implementar uma validação mais "real" do número de celular (com regex)
 
 ## Tarefas para eu fazer no futuro
-- [ ] Refatorar a função AddAsync (Create Order), ela está me incomodando
-- [ ] Colocar criptografia na gravação dos dados
-- [ ] Implementar o Azure Key Vault para armazenamento de keys e secret keys
-- [ ] Implementar sistema de logs com Serilog ou NLog - pesquisar depois qual vou aplicar
-- [ ] Isolar numa função o tratamento de erros nos endpoints
-- [ ] Uma outra para o tratamento de erros dos serviços
-- [ ] Criar ficheiro com todos as mensagens de erros, para centralizar todas as mensagens
-- [ ] Criar fluxo de status de pedido, nao faz sentido um pedido estar pending e passar logo para o status "entrega" 
-   - [ ] Criar endpoint de "avançar etapa" - endpoint que "tranfere" o pedido para a proxima fase, não faz sentido ter de passar o status
-   - [ ] Criar endpoint de "voltar etapa" - endpoint para voltar atras em algum pedido que tenha dado algum erro
-- [ ] Implementar a edição do pedido pela quantidade (tirar ou aumentar um item)
-- [ ] Implementar um fluxo do pedido(Ex: não deixar editar quando o pedido estiver em "cooking")
-- [ ] Validar o nr de celular
-- [ ] Dar uma atenção para os warnings do vscode
+Vi que o github tem tbm as "tasks do azure" e migrei todas as tarefas para as issues
