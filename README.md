@@ -58,4 +58,4 @@ Para se colocar em produção é altamente recomendável realizar as seguintes m
 3. Implementar uma validação mais "real" do número de celular (com regex)
 
 ## Tarefas para eu fazer no futuro
-Vi que o github tem tbm as "tasks do azure" e migrei todas as tarefas para as issues
+Vi que o github tem tbm as "tasks do azure" e migrei todas as tarefas para as [issues](https://github.com/DinisSimoes/RestaurantAPI/issues)
