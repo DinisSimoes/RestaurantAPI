@@ -80,7 +80,7 @@ namespace RestaurantAPI.Application.Services
             await _repository.DeleteAsync(id);
         }
 
-        public async Task<PageResult<Customer>> GetClientsAsync(int page, int pageSize)
+        public async Task<PageResult<Customer>> GetCustomersAsync(int page, int pageSize)
         {
             if (page <= 0) page = 1;
             if (pageSize <= 0) pageSize = 10;
