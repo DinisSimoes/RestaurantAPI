@@ -3,13 +3,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using RestaurantAPI.Domain.DTOs;
 using RestaurantAPI.Domain.Entities;
+using RestaurantAPI.Domain.Interfaces.Services;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
 namespace RestaurantAPI.Application.Services
 {
-    public class AuthService
+    public class AuthService : IAuthService
     {
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
