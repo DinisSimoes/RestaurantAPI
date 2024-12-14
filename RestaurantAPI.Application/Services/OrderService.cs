@@ -1,8 +1,8 @@
+
 using RestaurantAPI.Domain.DTOs;
 using RestaurantAPI.Domain.Entities;
 using RestaurantAPI.Domain.Interfaces.Repositories;
 using RestaurantAPI.Domain.Interfaces.Services;
-using RestaurantAPI.Domain.Requests;
 
 namespace RestaurantAPI.Application.Services
 {
@@ -98,15 +98,15 @@ namespace RestaurantAPI.Application.Services
             }
         }
 
-        public async Task AddItemToOrderAsync(Guid orderId, AddOrderItemRequest request)
+        public async Task AddItemToOrderAsync(Guid orderId, OrderItemDto request)
         {
             var order = await _orderRepository.GetByIdAsync(orderId);
             if (order == null)
                 throw new KeyNotFoundException($"Order with ID {orderId} not found.");
 
-            var menuItem = await _menuItemService.GetByNameAsync(request.orderItem.MenuItem);
+            var menuItem = await _menuItemService.GetByNameAsync(request.MenuItem);
             if (menuItem == null)
-                throw new KeyNotFoundException($"MenuItem with name {request.orderItem.MenuItem} not found.");
+                throw new KeyNotFoundException($"MenuItem with name {request.MenuItem} not found.");
 
             var orderItem = new OrderItem
             {
@@ -115,7 +115,7 @@ namespace RestaurantAPI.Application.Services
                 Order = order,
                 ItemId = menuItem.Id,
                 MenuItem = menuItem,
-                Quantity = request.orderItem.Quantity
+                Quantity = request.Quantity
             };
 
             order.TotalPriceCents += menuItem.PriceCents * orderItem.Quantity;

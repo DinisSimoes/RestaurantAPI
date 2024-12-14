@@ -12,6 +12,6 @@ namespace RestaurantAPI.Domain.Interfaces.Services
         Task AddAsync(CustomerDto customerDto);
         Task UpdateAsync(Customer customer);
         Task DeleteAsync(Guid id);
-        Task<PageResult<Customer>> GetClientsAsync(int page, int pageSize);
+        Task<PageResult<Customer>> GetCustomersAsync(int page, int pageSize);
     }
 }

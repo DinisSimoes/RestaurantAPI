@@ -19,13 +19,17 @@ namespace RestaurantAPI.Application.Services
             return await _repository.GetAllAsync();
         }
 
-        public async Task<MenuItem> GetByIdAsync(Guid id)
+        public async Task<MenuItemDto> GetByIdAsync(Guid id)
         {
             var item = await _repository.GetByIdAsync(id);
             if (item == null)
                 throw new KeyNotFoundException($"MenuItem with ID {id} not found.");
 
-            return item;
+            return new MenuItemDto
+            {
+                Name = item.Name,
+                PriceCents = item.PriceCents,
+            };
         }
 
         public async Task<MenuItem> GetByNameAsync(string name)
