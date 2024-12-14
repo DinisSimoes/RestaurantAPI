@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using RestaurantAPI.Application.Commands.Customer.AddCustomer;
+using RestaurantAPI.Application.Queries.GetCustomers;
 using RestaurantAPI.Domain.DTOs;
 using RestaurantAPI.Domain.Interfaces.Services;
 
@@ -9,11 +12,11 @@ namespace RestaurantAPI.API.Controllers
     [Route("api/[controller]")]
     public class CustomerController : ControllerBase
     {
-        private readonly ICustomerService _customerService;
+        private readonly IMediator _mediator;
 
-        public CustomerController(ICustomerService customerService)
+        public CustomerController(IMediator mediator)
         {
-            _customerService = customerService;
+            _mediator = mediator;
         }
 
         /// <summary>
@@ -27,8 +30,11 @@ namespace RestaurantAPI.API.Controllers
         [Authorize(Roles = "Cashier")]
         public async Task<IActionResult> GetClients([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            var clients = await _customerService.GetClientsAsync(page, pageSize);
-            return Ok(clients);
+            var query = new GetCustomersQuery(page, pageSize);
+            var response = await _mediator.Send(query);
+
+            // Retorna a resposta com os clientes
+            return Ok(response.Customers);
         }
 
         /// <summary>
@@ -42,23 +48,19 @@ namespace RestaurantAPI.API.Controllers
         [Authorize(Roles = "Cashier")]
         public async Task<IActionResult> AddCustomer([FromBody] CustomerDto customerDto)
         {
-            if (
-                customerDto == null || 
-                string.IsNullOrWhiteSpace(customerDto.firstName) || 
-                string.IsNullOrWhiteSpace(customerDto.lastName) || 
-                string.IsNullOrWhiteSpace(customerDto.phoneNumber)
-                )
+            if (customerDto == null ||
+        string.IsNullOrWhiteSpace(customerDto.firstName) ||
+        string.IsNullOrWhiteSpace(customerDto.lastName) ||
+        string.IsNullOrWhiteSpace(customerDto.phoneNumber))
             {
                 return BadRequest("Invalid customer data.");
             }
 
-            await _customerService.AddAsync(customerDto);
+            // Envia o comando para o MediatR
+            var command = new AddCustomerCommand(customerDto.firstName, customerDto.lastName, customerDto.phoneNumber);
+            var response = await _mediator.Send(command);
 
-            return Ok(new
-            {
-                Message = "Customer added successfully.",
-                Customer = customerDto
-            });
+            return Ok(response);
         }
 
     }

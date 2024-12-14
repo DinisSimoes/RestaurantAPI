@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using RestaurantAPI.Application.Commands.Auth.Login;
+using RestaurantAPI.Application.Commands.Auth.RegisterUser;
 using RestaurantAPI.Application.Services;
 using RestaurantAPI.Domain.DTOs;
 using RestaurantAPI.Domain.Entities;
@@ -10,11 +13,11 @@ namespace RestaurantAPI.API.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly AuthService _authService;
+        private readonly IMediator _mediator;
 
-        public AuthController(AuthService authService)
+        public AuthController(IMediator mediator)
         {
-            _authService = authService;
+            _mediator = mediator;
         }
 
         /// <summary>
@@ -27,14 +30,29 @@ namespace RestaurantAPI.API.Controllers
         public async Task<IActionResult> Register(RegisterDto registerDto)
         {
             if (!ModelState.IsValid)
+            {
                 return BadRequest(ModelState);
+            }
 
-            var result = await _authService.RegisterUserAsync(registerDto);
+            // Envia o comando para o MediatR
+            var command = new RegisterUserCommand(
+                registerDto.UserName,
+                registerDto.Email,
+                registerDto.Password,
+                registerDto.FirstName,
+                registerDto.LastName,
+                registerDto.PhoneNumber,
+                registerDto.Role
+            );
 
-            if (!result.Succeeded)
-                return BadRequest(result.Errors);
+            var response = await _mediator.Send(command);
 
-            return Ok("User registered successfully.");
+            if (!response.Succeeded)
+            {
+                return BadRequest(new { Errors = response.Errors });
+            }
+
+            return Ok(new { Message = response.Message });
         }
 
         /// <summary>
@@ -51,12 +69,21 @@ namespace RestaurantAPI.API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var token = await _authService.AuthenticateUserAsync(loginDto.UserName, loginDto.Password);
+            // Envia o comando para o Mediator
+            var command = new LoginCommand
+            {
+                UserName = loginDto.UserName,
+                Password = loginDto.Password
+            };
 
-            if (token == null)
-                return Unauthorized(new { Message = "Invalid username or password." });
+            var response = await _mediator.Send(command);
 
-            return Ok(new { Token = token });
+            if (response.ErrorMessage != null)
+            {
+                return Unauthorized(new { Message = response.ErrorMessage });
+            }
+
+            return Ok(new { Token = response.Token });
         }
     }
 }

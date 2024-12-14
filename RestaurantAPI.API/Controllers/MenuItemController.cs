@@ -1,5 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using RestaurantAPI.Application.Commands.MenuItem.CreateMenuItem;
+using RestaurantAPI.Application.Commands.MenuItem.DeleteMenuItem;
+using RestaurantAPI.Application.Commands.MenuItem.UpdateMenuItem;
+using RestaurantAPI.Application.Queries.GetMenuItemById;
 using RestaurantAPI.Domain.DTOs;
 using RestaurantAPI.Domain.Interfaces.Services;
 
@@ -9,11 +14,11 @@ namespace RestaurantAPI.API.Controllers
     [Route("api/[controller]")]
     public class MenuItemController : ControllerBase
     {
-        private readonly IMenuItemService _menuItemService;
+        private readonly IMediator _mediator;
 
-        public MenuItemController(IMenuItemService menuItemService)
+        public MenuItemController(IMediator mediator)
         {
-            _menuItemService = menuItemService;
+            _mediator = mediator;
         }
 
         /// <summary>
@@ -26,13 +31,15 @@ namespace RestaurantAPI.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetMenuItemById(Guid id)
         {
-            var menuItem = await _menuItemService.GetByIdAsync(id);
-            if (menuItem == null)
+            var query = new GetMenuItemByIdQuery { Id = id };
+            var response = await _mediator.Send(query);
+
+            if (response.Success)
             {
-                return NotFound($"MenuItem with ID {id} not found.");
+                return Ok(response.MenuItem);
             }
 
-            return Ok(menuItem);
+            return NotFound(new { Message = response.Message });
         }
 
         /// <summary>
@@ -48,12 +55,18 @@ namespace RestaurantAPI.API.Controllers
         {
             if (menuItemDto == null)
             {
-                return BadRequest("MenuItem is required");
+                return BadRequest("MenuItem is required.");
             }
 
-            await _menuItemService.AddAsync(menuItemDto);
+            var command = new CreateMenuItemCommand { MenuItem = menuItemDto };
+            var response = await _mediator.Send(command);
 
-            return Ok("MenuItem Created!");
+            if (response.Success)
+            {
+                return Ok(new { Message = response.Message });
+            }
+
+            return BadRequest(new { Message = response.Message });
         }
 
         /// <summary>
@@ -74,8 +87,15 @@ namespace RestaurantAPI.API.Controllers
                 return BadRequest("MenuItem is required");
             }
 
-            await _menuItemService.UpdateAsync(id, menuItem);
-            return NoContent();
+            var command = new UpdateMenuItemCommand { Id = id, MenuItem = menuItem };
+            var response = await _mediator.Send(command);
+
+            if (response.Success)
+            {
+                return NoContent();
+            }
+
+            return NotFound(new { Message = response.Message });
         }
 
         /// <summary>
@@ -89,14 +109,15 @@ namespace RestaurantAPI.API.Controllers
         [Authorize(Roles = "Cashier, Cook")]
         public async Task<IActionResult> DeleteMenuItem(Guid id)
         {
-            var menuItem = await _menuItemService.GetByIdAsync(id);
-            if (menuItem == null)
+            var command = new DeleteMenuItemCommand { Id = id };
+            var response = await _mediator.Send(command);
+
+            if (response.Success)
             {
-                return NotFound($"MenuItem with ID {id} not found.");
+                return NoContent();
             }
 
-            await _menuItemService.DeleteAsync(id);
-            return NoContent();
+            return NotFound(new { Message = response.Message });
         }
     }
 }

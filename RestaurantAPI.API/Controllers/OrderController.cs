@@ -1,8 +1,13 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using RestaurantAPI.Application.Commands.Order.CreateOrder;
+using RestaurantAPI.Application.Commands.Order.UpdateOrder;
+using RestaurantAPI.Application.Commands.OrderItem.AddItemToOrder;
+using RestaurantAPI.Application.Commands.OrderItem.DeleteItemFromOrder;
 using RestaurantAPI.Domain.DTOs;
+using RestaurantAPI.Domain.Entities;
 using RestaurantAPI.Domain.Interfaces.Services;
-using RestaurantAPI.Domain.Requests;
 using System.Security.Claims;
 
 namespace RestaurantAPI.API.Controllers
@@ -11,13 +16,11 @@ namespace RestaurantAPI.API.Controllers
     [Route("api/[controller]")]
     public class OrderController : ControllerBase
     {
-        private readonly IOrderService _orderService;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IMediator _mediator;
 
-        public OrderController(IOrderService orderService, IHttpContextAccessor httpContextAccessor)
+        public OrderController(IMediator mediator)
         {
-            _orderService = orderService;
-            _httpContextAccessor = httpContextAccessor;
+            _mediator = mediator;
         }
 
         /// <summary>
@@ -29,25 +32,22 @@ namespace RestaurantAPI.API.Controllers
         /// <response code="400">Dados do pedido são inválidos ou faltando.</response>
         /// <response code="500">Erro interno ao criar o pedido.</response>
         [HttpPost]
-        public async Task<IActionResult> CreateOrder([FromBody] OrderDto orderDto)
+        public async Task<IActionResult> CreateOrder([FromBody] CreateOrderCommand request)
         {
-            if (orderDto == null) return BadRequest(new { Message = "Order data is required." });
+            if (request == null)
+            {
+                return BadRequest(new { Message = "Order data is required." });
+            }
 
-            try
-            {
-                var userId = GetUserFromClaims();
+            var response = await _mediator.Send(request);
 
-                var order = await _orderService.AddAsync(orderDto, userId);
-                return Ok(new { Message = "Order created successfully." });
-            }
-            catch (ArgumentException ex)
+            // Retornar a resposta conforme o sucesso ou falha
+            if (response.Success)
             {
-                return BadRequest(new { Message = ex.Message });
+                return Ok(new { Message = response.Message });
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { Message = "An error occurred while creating the order.", Details = ex.Message });
-            }
+
+            return BadRequest(new { Message = response.Message });
 
         }
 
@@ -62,18 +62,21 @@ namespace RestaurantAPI.API.Controllers
         /// <response code="400">Dados inválidos para atualização.</response>
         [HttpPut("{id}/status")]
         [Authorize(Roles = "Cashier")]
-        public async Task<IActionResult> UpdateOrder(Guid id, [FromBody] UpdateOrderRequest request)
+        public async Task<IActionResult> UpdateOrder(Guid id, [FromBody] UpdateOrderCommand request)
         {
-            var order = await _orderService.GetByIdAsync(id);
-            if (order == null)
+            if (request == null)
             {
-                return NotFound($"Order with ID {id} not found.");
+                return BadRequest(new { Message = "Request body is required." });
             }
 
-            order.Status = request.Status;
+            var response = await _mediator.Send(new UpdateOrderCommand { Id = id, Status = request.Status});
 
-            await _orderService.UpdateAsync(order);
-            return NoContent();
+            if (response.Success)
+            {
+                return NoContent();
+            }
+
+            return NotFound(new { Message = response.Message });
         }
 
         /// <summary>
@@ -87,21 +90,24 @@ namespace RestaurantAPI.API.Controllers
         /// <response code="500">Erro interno ao remover o item.</response>
         [HttpDelete("{orderId}/items/{itemId}")]
         [Authorize(Roles = "Cashier")]
-        public async Task<IActionResult> RemoveItemFromOrder(Guid orderId, Guid itemId)
+        public async Task<IActionResult> DeleteItemFromOrder(Guid orderId, Guid itemId)
         {
-            try
+            var command = new DeleteItemFromOrderCommand
             {
-                await _orderService.RemoveItemFromOrderAsync(orderId, itemId);
+                OrderId = orderId,
+                ItemId = itemId
+            };
+
+            var response = await _mediator.Send(command);
+
+            if (response.Success)
+            {
                 return NoContent();
             }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+
+            return response.Message.Contains("not found")
+                ? NotFound(new { Message = response.Message })
+                : StatusCode(500, new { Message = response.Message });
         }
 
         /// <summary>
@@ -115,27 +121,24 @@ namespace RestaurantAPI.API.Controllers
         /// <response code="400">Dados inválidos para o item.</response>
         [HttpPost("{orderId}/items")]
         [Authorize(Roles = "Cashier")]
-        public async Task<IActionResult> AddItemToOrder(Guid orderId, [FromBody] AddOrderItemRequest request)
+        public async Task<IActionResult> AddItemToOrder(Guid orderId, [FromBody] OrderItemDto orderItem)
         {
-            try
+            var command = new AddItemToOrderCommand
             {
-                await _orderService.AddItemToOrderAsync(orderId, request);
-                return Ok(new { Message = "Item added to the order successfully." });
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { Error = ex.Message });
-            }
-        }
+                OrderId = orderId,
+                OrderItem = orderItem
+            };
 
-        private string GetUserFromClaims()
-        {
-            var user = _httpContextAccessor.HttpContext?.User;
-            return user?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "Unknown";
+            var response = await _mediator.Send(command);
+
+            if (response.Success)
+            {
+                return Ok(new { Message = response.Message });
+            }
+
+            return response.Message.Contains("not found")
+                ? NotFound(new { Message = response.Message })
+                : BadRequest(new { Error = response.Message });
         }
     }
 }
