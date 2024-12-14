@@ -2,7 +2,6 @@
 using RestaurantAPI.Domain.Entities;
 using RestaurantAPI.Domain.Interfaces.Repositories;
 using RestaurantAPI.Infrastructure.Data;
-using System.Data.Entity;
 
 namespace RestaurantAPI.Infrastructure.Repositories
 {
