@@ -1,4 +1,5 @@
-﻿using RestaurantAPI.Domain.Entities;
+﻿using RestaurantAPI.Domain.DTOs;
+using RestaurantAPI.Domain.Entities;
 
 namespace RestaurantAPI.Domain.Interfaces.Repositories
 {

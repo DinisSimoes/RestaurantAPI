@@ -1,9 +1,16 @@
-﻿namespace RestaurantAPI.Domain.DTOs
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace RestaurantAPI.Domain.DTOs
 {
     public class CustomerDto
     {
-        public string firstName { get; set; }
-        public string lastName { get; set; }
-        public string phoneNumber { get; set; }
+        [Required(ErrorMessage = "First name is required.")]
+        public required string firstName { get; set; }
+
+        [Required(ErrorMessage = "Last name is required.")]
+        public required string lastName { get; set; }
+        
+        [Required(ErrorMessage = "Phone number is required.")]
+        public required string phoneNumber { get; set; }
     }
 }

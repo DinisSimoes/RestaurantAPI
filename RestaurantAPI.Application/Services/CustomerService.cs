@@ -39,12 +39,12 @@ namespace RestaurantAPI.Application.Services
             return customer;
         }
 
-        public async Task AddAsync(CustomerDto customerDto)
+        public async Task<Customer> AddAsync(CustomerDto customerDto)
         {
             if (customerDto == null)
                 throw new ArgumentNullException(nameof(customerDto));
 
-            Customer costumer = new Customer
+            Customer custumer = new Customer
             {
                 Id = Guid.NewGuid(),
                 FirstName = customerDto.firstName,
@@ -52,7 +52,9 @@ namespace RestaurantAPI.Application.Services
                 PhoneNumber = customerDto.phoneNumber,
             };
 
-            await _repository.AddAsync(costumer);
+            await _repository.AddAsync(custumer);
+
+            return custumer; 
         }
 
         public async Task UpdateAsync(Customer customer)

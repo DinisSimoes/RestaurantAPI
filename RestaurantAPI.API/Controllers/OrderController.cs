@@ -31,10 +31,12 @@ namespace RestaurantAPI.API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateOrder([FromBody] OrderDto orderDto)
         {
-            if (orderDto == null) return BadRequest(new { Message = "Order data is required." });
 
             try
             {
+                if(orderDto.OrderItems.Count() <= 0)
+                    throw new ArgumentException("OrderItems data is required");
+
                 var userId = GetUserFromClaims();
 
                 var order = await _orderService.AddAsync(orderDto, userId);
@@ -119,7 +121,7 @@ namespace RestaurantAPI.API.Controllers
         {
             try
             {
-                await _orderService.AddItemToOrderAsync(orderId, request);
+                await _orderService.AddItemToOrderAsync(orderId, request.orderItem);
                 return Ok(new { Message = "Item added to the order successfully." });
             }
             catch (KeyNotFoundException ex)
