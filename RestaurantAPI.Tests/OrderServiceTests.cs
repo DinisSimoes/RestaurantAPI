@@ -10,7 +10,7 @@ namespace RestaurantAPI.Tests
 {
     public class OrderServiceTests
     {
-        private readonly Mock<ICustomerRepository> _mockCustomerRepository;
+        private readonly Mock<ICustomerService> _mockCustomerService;
         private readonly Mock<IOrderRepository> _mockOrderRepository;
         private readonly Mock<IOrderItemService> _mockOrderItemService;
         private readonly Mock<IMenuItemService> _mockMenuItemService;
@@ -18,13 +18,13 @@ namespace RestaurantAPI.Tests
 
         public OrderServiceTests()
         {
-            _mockCustomerRepository = new Mock<ICustomerRepository>();
+            _mockCustomerService = new Mock<ICustomerService>();
             _mockOrderRepository = new Mock<IOrderRepository>();
             _mockOrderItemService = new Mock<IOrderItemService>();
             _mockMenuItemService = new Mock<IMenuItemService>();
 
             _orderService = new OrderService(
-                _mockCustomerRepository.Object,
+                _mockCustomerService.Object,
                 _mockOrderRepository.Object,
                 _mockOrderItemService.Object,
                 _mockMenuItemService.Object
@@ -96,11 +96,23 @@ namespace RestaurantAPI.Tests
                 }
             };
 
+            Customer consumer = new Customer{
+                    FirstName = "John",
+                    LastName = "Doe",
+                    PhoneNumber = "123456789"
+            };
+
             var menuItem = new MenuItem { Id = Guid.NewGuid(), Name = "Pizza", PriceCents = 5000 };
+
+            var orderId = Guid.NewGuid();
+            var order = new Order { Id = orderId, TotalPriceCents = 10000 };
             _mockMenuItemService.Setup(service => service.GetByNameAsync(It.IsAny<string>())).ReturnsAsync(menuItem);
-            _mockCustomerRepository.Setup(repo => repo.GetByPhoneNumber(It.IsAny<string>())).Returns((Customer)null);
+            _mockCustomerService.Setup(service => service.GetByPhoneAsync(It.IsAny<string>())).ReturnsAsync((Customer)null);
+            _mockCustomerService.Setup(service => service.AddAsync(It.IsAny<CustomerDto>())).ReturnsAsync(consumer);
             _mockOrderRepository.Setup(repo => repo.AddAsync(It.IsAny<Order>())).Returns(Task.CompletedTask);
+            _mockOrderRepository.Setup(repo => repo.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(order);
             _mockOrderItemService.Setup(service => service.AddAsync(It.IsAny<OrderItem>())).Returns(Task.CompletedTask);
+            _mockOrderItemService.Setup(service => service.UpdateAsync(It.IsAny<OrderItem>())).Returns(Task.CompletedTask);
 
             // Act
             var result = await _orderService.AddAsync(orderDto, "user123");
@@ -131,7 +143,7 @@ namespace RestaurantAPI.Tests
             _mockOrderItemService.Setup(service => service.AddAsync(It.IsAny<OrderItem>())).Returns(Task.CompletedTask);
 
             // Act
-            await _orderService.AddItemToOrderAsync(orderId, orderItemRequest);
+            await _orderService.AddItemToOrderAsync(orderId, orderItemRequest.orderItem);
 
             // Assert
             Assert.Equal(20000, order.TotalPriceCents);
@@ -191,12 +203,24 @@ namespace RestaurantAPI.Tests
                 }
             };
 
+            Customer consumer = new Customer{
+                    FirstName = firstName,
+                    LastName = lastName,
+                    PhoneNumber = customerPhoneNumber
+            };
+
             var menuItem = new MenuItem { Id = Guid.NewGuid(), Name = "Pizza", PriceCents = 5000 };
+            
+            var orderId = Guid.NewGuid();
+            var order = new Order { Id = orderId, TotalPriceCents = 10000 };
+
             _mockMenuItemService.Setup(service => service.GetByNameAsync(It.IsAny<string>())).ReturnsAsync(menuItem);
-            _mockCustomerRepository.Setup(repo => repo.GetByPhoneNumber(It.IsAny<string>())).Returns((Customer)null);
-            _mockCustomerRepository.Setup(repo => repo.AddAsync(It.IsAny<Customer>())).Returns(Task.CompletedTask);
+            _mockCustomerService.Setup(service => service.GetByPhoneAsync(It.IsAny<string>())).ReturnsAsync((Customer)null);
+            _mockCustomerService.Setup(service => service.AddAsync(It.IsAny<CustomerDto>())).ReturnsAsync(consumer);
             _mockOrderRepository.Setup(repo => repo.AddAsync(It.IsAny<Order>())).Returns(Task.CompletedTask);
+            _mockOrderRepository.Setup(repo => repo.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(order);
             _mockOrderItemService.Setup(service => service.AddAsync(It.IsAny<OrderItem>())).Returns(Task.CompletedTask);
+            _mockOrderItemService.Setup(service => service.UpdateAsync(It.IsAny<OrderItem>())).Returns(Task.CompletedTask);
 
             // Act
             var result = await _orderService.AddAsync(orderDto, "user123");
@@ -204,7 +228,7 @@ namespace RestaurantAPI.Tests
             // Assert
             Assert.NotNull(result);
             Assert.Equal(10000, result.TotalPriceCents);
-            _mockCustomerRepository.Verify(repo => repo.AddAsync(It.IsAny<Customer>()), Times.Once);
+            _mockCustomerService.Verify(repo => repo.AddAsync(It.IsAny<CustomerDto>()), Times.Once);
         }
     }
 }
