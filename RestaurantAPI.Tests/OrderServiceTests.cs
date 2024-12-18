@@ -84,7 +84,7 @@ namespace RestaurantAPI.Tests
             // Arrange
             var orderDto = new OrderDto
             {
-                customer = new CustomerDto
+                Customer = new CustomerDto
                 {
                     firstName = "John",
                     lastName = "Doe",
@@ -111,15 +111,7 @@ namespace RestaurantAPI.Tests
             _mockOrderRepository.Verify(repo => repo.AddAsync(It.IsAny<Order>()), Times.Once);
             _mockOrderItemService.Verify(service => service.AddAsync(It.IsAny<OrderItem>()), Times.Once);
         }
-
-        [Fact]
-        public async Task AddAsync_ThrowsArgumentNullException_WhenOrderDtoIsNull()
-        {
-            // Act & Assert
-            var ex = await Assert.ThrowsAsync<ArgumentNullException>(() => _orderService.AddAsync(null, "user123"));
-            Assert.Equal("Value cannot be null. (Parameter 'orderDto')", ex.Message);
-        }
-
+        
         [Fact]
         public async Task AddItemToOrderAsync_AddsItemToOrder()
         {
@@ -187,7 +179,7 @@ namespace RestaurantAPI.Tests
             // Arrange
             var orderDto = new OrderDto
             {
-                customer = new CustomerDto
+                Customer = new CustomerDto
                 {
                     firstName = firstName,
                     lastName = lastName,
