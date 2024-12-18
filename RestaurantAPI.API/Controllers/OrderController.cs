@@ -31,7 +31,6 @@ namespace RestaurantAPI.API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateOrder([FromBody] OrderDto orderDto)
         {
-            if (orderDto == null) return BadRequest(new { Message = "Order data is required." });
 
             try
             {

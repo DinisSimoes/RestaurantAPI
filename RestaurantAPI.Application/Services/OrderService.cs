@@ -34,18 +34,16 @@ namespace RestaurantAPI.Application.Services
 
         public async Task<Order> AddAsync(OrderDto orderDto, string userId)
         {
-            ValidateOrderDto(orderDto);
-
-            var customer = _customerRepository.GetByPhoneNumber(orderDto.customer.phoneNumber);
+            var customer = _customerRepository.GetByPhoneNumber(orderDto.Customer.phoneNumber);
 
             if (customer == null)
             {
-                ValidateCustomerDto(orderDto.customer);
+                ValidateCustomerDto(orderDto.Customer);
                 customer = new Customer
                 {
-                    FirstName = orderDto.customer.firstName,
-                    LastName = orderDto.customer.lastName,
-                    PhoneNumber = orderDto.customer.phoneNumber,
+                    FirstName = orderDto.Customer.firstName,
+                    LastName = orderDto.Customer.lastName,
+                    PhoneNumber = orderDto.Customer.phoneNumber,
                 };
 
                 await _customerRepository.AddAsync(customer);
@@ -123,12 +121,6 @@ namespace RestaurantAPI.Application.Services
             await _orderRepository.UpdateAsync(order);
             await _orderItemService.AddAsync(orderItem);
 
-        }
-
-        private void ValidateOrderDto(OrderDto orderDto)
-        {
-            if (orderDto == null) throw new ArgumentNullException(nameof(orderDto));
-            if (orderDto.customer == null) throw new ArgumentException("Customer information is required.");
         }
 
         private void ValidateCustomerDto(CustomerDto customerDto)
