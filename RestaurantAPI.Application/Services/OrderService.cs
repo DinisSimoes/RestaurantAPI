@@ -8,14 +8,14 @@ namespace RestaurantAPI.Application.Services
 {
     public class OrderService : IOrderService
     {
-        private readonly ICustomerRepository _customerRepository;
+        private readonly ICustomerService _customerService;
         private readonly IOrderRepository _orderRepository;
         private readonly IOrderItemService _orderItemService;
         private readonly IMenuItemService _menuItemService;
 
-        public OrderService(ICustomerRepository customerRepository, IOrderRepository orderRepository, IOrderItemService orderItemService, IMenuItemService menuItemService)
+        public OrderService(ICustomerService customerService, IOrderRepository orderRepository, IOrderItemService orderItemService, IMenuItemService menuItemService)
         {
-            _customerRepository = customerRepository;
+            _customerService = customerService;
             _orderRepository = orderRepository;
             _orderItemService = orderItemService;
             _menuItemService = menuItemService;
@@ -34,32 +34,18 @@ namespace RestaurantAPI.Application.Services
 
         public async Task<Order> AddAsync(OrderDto orderDto, string userId)
         {
-            var customer = _customerRepository.GetByPhoneNumber(orderDto.Customer.phoneNumber);
+            Customer customer = await _customerService.GetByPhoneAsync(orderDto.Customer.phoneNumber);
 
             if (customer == null)
             {
-                ValidateCustomerDto(orderDto.Customer);
-                customer = new Customer
-                {
-                    FirstName = orderDto.Customer.firstName,
-                    LastName = orderDto.Customer.lastName,
-                    PhoneNumber = orderDto.Customer.phoneNumber,
-                };
-
-                await _customerRepository.AddAsync(customer);
+                customer = await _customerService.AddAsync(orderDto.Customer);
             }
 
             var total = 0;
 
-            foreach (var t in orderDto.OrderItems)
-            {
-                MenuItem menuItem = await _menuItemService.GetByNameAsync(t.MenuItem);
-                var result = menuItem.PriceCents * t.Quantity;
-                total = total + result;
-            }
-
             var order = new Order
             {
+                Id = Guid.NewGuid(),
                 Customer = customer,
                 TotalPriceCents = total,
                 Status = "pending",
@@ -72,21 +58,10 @@ namespace RestaurantAPI.Application.Services
             {
                 await _orderRepository.AddAsync(order);
 
-                foreach (var t in orderDto.OrderItems)
+                foreach (OrderItemDto t in orderDto.OrderItems)
                 {
                     MenuItem menuItem = await _menuItemService.GetByNameAsync(t.MenuItem);
-
-                    OrderItem item = new OrderItem
-                    {
-                        Id = Guid.NewGuid(),
-                        OrderId = order.Id,
-                        Order = order,
-                        ItemId = menuItem.Id,
-                        MenuItem = menuItem,
-                        Quantity = t.Quantity
-                    };
-
-                    await _orderItemService.AddAsync(item);
+                    await AddItemToOrderAsync(order.Id, t);
                 }
                 return order;
             }
@@ -96,15 +71,15 @@ namespace RestaurantAPI.Application.Services
             }
         }
 
-        public async Task AddItemToOrderAsync(Guid orderId, AddOrderItemRequest request)
+        public async Task AddItemToOrderAsync(Guid orderId, OrderItemDto request)
         {
             var order = await _orderRepository.GetByIdAsync(orderId);
             if (order == null)
                 throw new KeyNotFoundException($"Order with ID {orderId} not found.");
 
-            var menuItem = await _menuItemService.GetByNameAsync(request.orderItem.MenuItem);
+            var menuItem = await _menuItemService.GetByNameAsync(request.MenuItem);
             if (menuItem == null)
-                throw new KeyNotFoundException($"MenuItem with name {request.orderItem.MenuItem} not found.");
+                throw new KeyNotFoundException($"MenuItem with name {request.MenuItem} not found.");
 
             var orderItem = new OrderItem
             {
@@ -113,7 +88,7 @@ namespace RestaurantAPI.Application.Services
                 Order = order,
                 ItemId = menuItem.Id,
                 MenuItem = menuItem,
-                Quantity = request.orderItem.Quantity
+                Quantity = request.Quantity
             };
 
             order.TotalPriceCents += menuItem.PriceCents * orderItem.Quantity;
@@ -121,13 +96,6 @@ namespace RestaurantAPI.Application.Services
             await _orderRepository.UpdateAsync(order);
             await _orderItemService.AddAsync(orderItem);
 
-        }
-
-        private void ValidateCustomerDto(CustomerDto customerDto)
-        {
-            if (string.IsNullOrWhiteSpace(customerDto.firstName)) throw new ArgumentException("First name is required.");
-            if (string.IsNullOrWhiteSpace(customerDto.lastName)) throw new ArgumentException("Last name is required.");
-            if (string.IsNullOrWhiteSpace(customerDto.phoneNumber)) throw new ArgumentException("Phone number is required.");
         }
 
         public async Task UpdateAsync(Order order)

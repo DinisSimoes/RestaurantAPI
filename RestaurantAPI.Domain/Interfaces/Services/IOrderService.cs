@@ -11,7 +11,7 @@ namespace RestaurantAPI.Domain.Interfaces.Services
         Task<Order> AddAsync(OrderDto orderDto, string userId);
         Task UpdateAsync(Order order);
         Task DeleteAsync(Guid id);
-        Task AddItemToOrderAsync(Guid orderId, AddOrderItemRequest request);
+        Task AddItemToOrderAsync(Guid orderId, OrderItemDto request);
         Task RemoveItemFromOrderAsync(Guid orderId, Guid itemId);
     }
 }

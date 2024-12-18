@@ -9,7 +9,7 @@ namespace RestaurantAPI.Domain.Interfaces.Services
         Task<IEnumerable<Customer>> GetAllAsync();
         Task<Customer> GetByIdAsync(Guid id);
         Task<Customer> GetByPhoneAsync(string phone);
-        Task AddAsync(CustomerDto customerDto);
+        Task<Customer> AddAsync(CustomerDto customerDto);
         Task UpdateAsync(Customer customer);
         Task DeleteAsync(Guid id);
         Task<PageResult<Customer>> GetClientsAsync(int page, int pageSize);
