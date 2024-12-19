@@ -1,5 +1,22 @@
 # RestaurantAPI
 
+## Descrição
+O RestaurantAPI é uma API desenvolvida para gerenciar operações de restaurantes, incluindo autenticação de usuários, cadastro de clientes, gerenciamento de itens de menu e controle de pedidos. Construída com .NET Core, a aplicação utiliza Entity Framework Core para interagir com o banco de dados e Docker para facilitar o desenvolvimento e a implantação.
+
+## Estrutura do Projeto
+
+O projeto é dividido em várias camadas, cada uma com uma responsabilidade bem definida. A estrutura do projeto é a seguinte:
+
+```plaintext
+RestaurantAPI/
+├── RestaurantAPI.API/              # Contém os controladores e configurações da API
+├── RestaurantAPI.Application/      # Contém a lógica de negócios e serviços
+├── RestaurantAPI.Domain/           # Contém as entidades, interfaces e DTOs
+├── RestaurantAPI.Infrastructure/   # Contém a implementação dos repositórios e acesso a dados
+├── RestaurantAPI.Tests/            # Contém a implementação dos testes unitários
+├── README.md                       # Documentação do projeto
+```
+
 ## Configuração 
 
 ### Rodando a BD no componente Docker
@@ -48,27 +65,47 @@ Para aplicar as migrations no banco de dados, siga os passos abaixo utilizando o
    ```powershell
    Update-Database
 
+### Rodando o Projeto
+1. **Iniciar o projeto**
+   
+Pressione F5 no Visual Studio para iniciar a aplicação.
+O projeto será executado no URL: https://localhost:7147/swagger/index.html.
+
+2. **Testar os endpoints no Swagger**
+
+Gere um token de autenticação usando o endpoint /login.
+No Swagger, clique em "Authorize" e insira o token no formato:
+```
+Bearer <token_gerado>
+```
+Após autorizar, você poderá testar os endpoints autenticados.
+
+### Rodar testes unitarios
+Para rodar os testes unitários, siga os passos abaixo:
+
+1. Abra o **Visual Studio** ou qualquer outra IDE que você esteja utilizando.
+2. Abra a solução do projeto.
+3. Navegue até a pasta **RestaurantAPI.Tests**.
+4. Execute os testes unitários:
+
+   - Se estiver utilizando o Visual Studio, você pode ir até o menu **Test** e selecionar **Run All Tests**.
+   - Ou, se preferir rodar via **CLI** (linha de comando), execute o comando abaixo:
+
+   ```bash
+   dotnet test
+   ```
+
 ## Sugestões
 
-Caso o volume de usuarios da aplicação cresca recomendo implementar a metodologia [cqrs](https://medium.com/@marcelomg21/cqrs-command-query-responsibility-segregation-em-uma-arquitetura-de-micro-servi%C3%A7os-71dcb687a8a9) na coneção à BD.
+**Segurança**
+- Implementar criptografia para dados sensíveis ao gravar informações, como número de celular.
+- Armazenar as chaves de segurança, como `secretkeys` em um local seguro, como o **Azure Key Vault** ou **AWS Secrets Manager**.
 
-Para se colocar em produção é altamente recomendável realizar as seguintes mudanças:
-1. Colocar encriptação em dados sensiveis ao gravar a informação (Ex: celular)
-2. Colocar as keys e secretkeys em algum lugar seguro (Ex. Azure Key Vault ou AWS Secret Manager)
-3. Implementar uma validação mais "real" do número de celular (com regex)
+**Melhorias na arquitetura**
+- Se o volume de usuários crescer, implementar **CQRS** (Command Query Responsibility Segregation) para separar as operações de leitura e escrita no banco de dados.
 
 ## Tarefas para eu fazer no futuro
-- [ ] Refatorar a função AddAsync (Create Order), ela está me incomodando
-- [ ] Colocar criptografia na gravação dos dados
-- [ ] Implementar o Azure Key Vault para armazenamento de keys e secret keys
-- [ ] Implementar sistema de logs com Serilog ou NLog - pesquisar depois qual vou aplicar
-- [ ] Isolar numa função o tratamento de erros nos endpoints
-- [ ] Uma outra para o tratamento de erros dos serviços
-- [ ] Criar ficheiro com todos as mensagens de erros, para centralizar todas as mensagens
-- [ ] Criar fluxo de status de pedido, nao faz sentido um pedido estar pending e passar logo para o status "entrega" 
-   - [ ] Criar endpoint de "avançar etapa" - endpoint que "tranfere" o pedido para a proxima fase, não faz sentido ter de passar o status
-   - [ ] Criar endpoint de "voltar etapa" - endpoint para voltar atras em algum pedido que tenha dado algum erro
-- [ ] Implementar a edição do pedido pela quantidade (tirar ou aumentar um item)
-- [ ] Implementar um fluxo do pedido(Ex: não deixar editar quando o pedido estiver em "cooking")
-- [ ] Validar o nr de celular
-- [ ] Dar uma atenção para os warnings do vscode
+As próximas tarefas para o projeto estão listadas nas [Issues do GitHub](https://github.com/DinisSimoes/RestaurantAPI/issues). Algumas das tarefas incluem:
+- Implementação de novos endpoints.
+- Melhoria na validação de dados.
+- Refaturação de código.
